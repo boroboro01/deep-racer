@@ -11,21 +11,22 @@ for episode in range(100):  # 100 에피소드 진행
     state = env.reset()
     done = False
     total_reward = 0
+    
     while not done:
-        env.render()  # 환경을 화면에 표시
-
-        # 무작위로 행동 선택
+        env.render()  # 환경 화면 출력
+        
+        # 무작위 행동 선택
         action = env.action_space.sample()
-
-        # 선택한 행동을 환경에 적용
+        
+        # 행동 적용 및 결과 수신
         next_state, reward, done, _ = env.step(action)
         total_reward += reward
-
-        # 선택한 액션, 보상, 환경 상태, 누적 리워드 출력
+        
+        # 행동과 보상 출력
         print(f"Action: {action}, Reward: {reward}, State: {next_state}, Total Reward: {total_reward}")
-
+        
         state = next_state
-
+    
     rewards.append(total_reward)
 
 env.close()
