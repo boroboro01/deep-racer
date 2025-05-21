@@ -4,7 +4,7 @@ import gym
 import matplotlib.pyplot as plt
 
 # 환경 초기화
-env = gym.make('FrozenLake-v1', is_slippery=False)
+env = gym.make('FrozenLake-v1', is_slippery=False, new_step_api=True)
 
 # 파라미터 설정
 num_episodes = 5000
@@ -34,8 +34,9 @@ for episode in range(num_episodes):
         else:
             action = torch.argmax(Q[state]).item()
 
-        # 선택한 행동으로 환경에서 한 스텝 진행
-        new_state, reward, done, _ = env.step(action)
+        # 행동 수행 및 환경 상태 관찰
+        new_state, reward, terminated, truncated, info = env.step(action)
+        done = terminated or truncated
 
         # Q-table 업데이트
         Q[state, action] = (1 - learning_rate) * Q[state, action] + \
