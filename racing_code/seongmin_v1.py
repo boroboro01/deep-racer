@@ -8,8 +8,6 @@ def reward_function(params):
     distance_from_center = params['distance_from_center']
     is_offtrack = params['is_offtrack']
     steering = abs(params['steering_angle'])
-    steps = params['steps']
-    progress = params['progress']
 
     if is_offtrack:
         return 1e-3
@@ -36,41 +34,22 @@ def reward_function(params):
     else:
         turn_angle = 0
 
-    # 직선 구간
+    # 1️⃣ outline/in-line 유지
     if turn_angle < 10:
         if distance_from_center >= 0.4 * track_width:
-            reward += 1.0  # 오른쪽 아웃라인 주행 보상
-
-        # 속도 보상 개선
-        if speed < 2.0:
-            reward *= 0.8  # 너무 느리면 패널티
-        elif speed <= 4.0:
-            reward += speed * 0.5  # 중간 속도 선형 보상
-        else:
-            reward += 2.0  # capped 보너스, 폭발 방지
-
-    # 코너 구간
+            reward += 1.0  # 직선: 오른쪽
     else:
         if distance_from_center <= 0.1 * track_width:
-            reward += 1.0  # 왼쪽 인코스 주행 보상
+            reward += 1.0  # 코너: 왼쪽
 
-        # 코너 속도 보상 개선
-        if speed < 2.0:
-            reward += 1.0  # 저속 안전 주행 보상
-        elif speed <= 3.0:
-            reward += 0.5  # 약간 빠른 속도는 소폭 보상
-        else:
-            reward *= 0.7  # 코너에서 너무 빠르면 패널티
+    # 2️⃣ 속도 보상 (느림 패널티, 빠름 보상)
+    if speed < 2.5:
+        reward *= 0.8  # 너무 느리면 패널티
+    elif speed > 3.8:
+        reward += 1.0  # 빠름 보상
 
-    # 스티어링 각도 패널티
+    # 3️⃣ (선택) steering penalty
     if steering > 15:
-        reward *= 0.8
-
-    # 진행률 기반 보상
-    expected_progress = (steps / 300) * 100
-    if progress > expected_progress:
-        reward += 1.0
-    else:
-        reward *= 0.9
+        reward *= 0.8  # 과도한 steering 패널티
 
     return float(reward)
